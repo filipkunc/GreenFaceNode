@@ -5,6 +5,7 @@ var WebSocketServer = require('ws').Server
 
 app.use(express.static(__dirname + '/public'));
 
+var port = process.env.PORT || 1337;
 var server = http.createServer(app);
 
 var clientId = 0;
@@ -25,7 +26,7 @@ wss.on('connection', function(ws) {
         players[data.id] = data.state;
     });
     // ws.on('close', function() {
-    // });
+    //     });
     clientId++;
     var initMessage = {type: "init", id: clientId};
     ws.send(JSON.stringify(initMessage));
@@ -34,8 +35,8 @@ wss.on('connection', function(ws) {
     {
         setInterval(function() {
             wss.broadcast({type: "playerStates", playerStates: players});
-        }, 1000);
+        }, 100);
     }
 });
 
-server.listen(1337);
+server.listen(port);
