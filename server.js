@@ -26,17 +26,15 @@ wss.on('connection', function(ws) {
         players[data.id] = data.state;
     });
     // ws.on('close', function() {
-    //     });
+//
+//     });
     clientId++;
     var initMessage = {type: "init", id: clientId};
     ws.send(JSON.stringify(initMessage));
-    
-    if (clientId == 1)
-    {
-        setInterval(function() {
-            wss.broadcast({type: "playerStates", playerStates: players});
-        }, 100);
-    }
 });
 
 server.listen(port);
+
+setInterval(function() {
+    wss.broadcast({type: "playerStates", playerStates: players});
+}, 100);
