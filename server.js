@@ -10,6 +10,7 @@ var server = http.createServer(app);
 
 var clientId = 0;
 var players = {};
+var activeIds = {};
 
 var wss = new WebSocketServer({server: server});
 
@@ -24,10 +25,12 @@ wss.on('connection', function(ws) {
     ws.on('message', function(message) {
         var data = JSON.parse(message);
         players[data.id] = data.state;
+        activeIds[ws] = data.id;
     });
-    // ws.on('close', function() {
-//
-//     });
+    ws.on('close', function() {
+        delete players[activeIds[ws]];
+        delete activeIds[ws];
+    });
     clientId++;
     var initMessage = {type: "init", id: clientId};
     ws.send(JSON.stringify(initMessage));
