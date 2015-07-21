@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Game Simulation</title>
+        <script type="text/javascript" src="PortedClasses/FPGraphics.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPPlatform.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPMovablePlatform.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPPlayer.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPDiamond.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPExit.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPElevator.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPTrampoline.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPMagnet.js"></script>
+        <script type="text/javascript" src="PortedClasses/GFSoldier.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPSpeedPowerUp.js"></script>
+        <script type="text/javascript" src="PortedClasses/FPGame.js"></script>
+        <script type="text/javascript" src="PortedClasses/Game.js"></script>
+        <style type="text/css">
+            body { font-family: Arial, Helvetica, sans-serif; margin: 0px; padding: 0px; background-color:rgb(150,150,150); }
+            canvas { }
+            #controls {
+                width: 190px;
+                float: right;
+                padding: 5px;
+            }
+            #game {
+                margin: auto; padding: 10px;  width: 802px; height: 600px;
+                display: block;
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body onkeydown="keyDown(event);" onkeyup="keyUp(event);">
+        <div id="game">
+            <canvas id="canvas" width="800" height="600">
+            </canvas>
+        </div>
+    </body>
+</html>
