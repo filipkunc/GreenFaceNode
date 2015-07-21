@@ -24,16 +24,18 @@ wss.on('connection', function(ws) {
         var data = JSON.parse(message);
         players[data.id] = data.state;
     });
-    ws.on('close', function() {
-    });
+    // ws.on('close', function() {
+    // });
     clientId++;
     var initMessage = {type: "init", id: clientId};
     ws.send(JSON.stringify(initMessage));
+    
+    if (clientId == 1)
+    {
+        setInterval(function() {
+            wss.broadcast({type: "playerStates", playerStates: players});
+        }, 1000);
+    }
 });
 
-server.listen(1337, function() {
-});
-
-setInterval(function() {
-    wss.broadcast({type: "playerStates", playerStates: players});
-}, 100);
+server.listen(1337);
