@@ -347,13 +347,13 @@ function FPPlayer(w, h)
         return state;
     }
     
-    this.drawState = function(context, state)
+    this.drawState = function(context, state, id)
     {
         context.save();
         
         if (state.leftOriented)
         {
-            context.translate(state.x  + this.worldOffsetX + playerSize, state.y + this.worldOffsetY);
+            context.translate(state.x + this.worldOffsetX + playerSize, state.y + this.worldOffsetY);
             context.scale(-1, 1);
         }
         else
@@ -369,6 +369,11 @@ function FPPlayer(w, h)
             context.drawImage(playerImage[state.moveCounter], 0, 0);
         
         context.restore();
+        
+        context.fillStyle = "white";
+        context.font = "16px Helvetica Neue";
+        context.fillText("id: " + id, state.x + this.worldOffsetX, state.y + this.worldOffsetY - 10.0);
+        context.fillStyle = "black";
     }
     
     this.draw = function(context)

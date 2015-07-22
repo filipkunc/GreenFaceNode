@@ -159,10 +159,11 @@ function connect() {
     
     ws.onmessage = function(e) {
         var message = JSON.parse(e.data);
-        if (message.type == "init")
+        if (message.type == "playerStates")
+        {
             game.id = message.id;
-        else if (message.type == "playerStates")
             game.playerStates = message.playerStates;
+        }
     };
 }
 
@@ -180,9 +181,9 @@ function init()
     game = new FPGame(canvas.width, canvas.height);
 	
 	//loadLevel("Levels/" + qsParm['level']);
-    loadLevel("Levels/Tutorial.xml");
+    loadLevel("Levels/CrazyJumps.xml");
     
-   //connect();
+   connect();
 }
 
 function draw()
@@ -190,9 +191,6 @@ function draw()
     game.update(ws_opened ? ws : null);
 	context.fillRect(0, 0, canvas.width, canvas.height);
     game.draw(context);
-    
-    if (!ws_opened)
-        connect();
 }
 
 function keyDown(event)

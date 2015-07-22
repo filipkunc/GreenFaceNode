@@ -72,7 +72,7 @@ function FPGame(w, h)
         for (var id in states)
         {
             if (id != this.id)
-                this.player.drawState(context, states[id]);
+                this.player.drawState(context, states[id], id);
         }
         
         context.fillStyle = "white";
