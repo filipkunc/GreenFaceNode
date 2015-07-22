@@ -17,7 +17,6 @@ wss.broadcast = function broadcast(players) {
     var playerStates = {};
     for (var ws in players)
         playerStates[players[ws].id] = players[ws].state;
-    console.log(playerStates);
     wss.clients.forEach(function each(client) {
         var message = JSON.stringify({
             type: "playerStates", 
