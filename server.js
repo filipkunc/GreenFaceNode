@@ -34,12 +34,10 @@ wss.on('connection', function(ws) {
         players[ws].state = data.state;
     });
     ws.on('close', function() {
-        console.log("close - clientId: %s", players[ws].id);
         delete players[ws];
     });
     clientId++;
     players[ws] = {id:clientId, state:null};
-    console.log("connection - clientId: %s", clientId);
 });
 
 server.listen(port);
