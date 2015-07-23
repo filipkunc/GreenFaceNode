@@ -9,18 +9,18 @@ var port = process.env.PORT || 1337;
 var server = http.createServer(app);
 
 var clientId = 0;
-var players = {};
 
 var wss = new WebSocketServer({server: server});
 
-wss.broadcast = function broadcast(players) {
+wss.broadcast = function broadcast() {
     var playerStates = {};
-    for (var ws in players)
-        playerStates[players[ws].id] = players[ws].state;
+    wss.clients.forEach(function each(client) {
+        playerStates[client.clientId] = client.playerState;
+    });    
     wss.clients.forEach(function each(client) {
         var message = JSON.stringify({
             type: "playerStates", 
-            id: players[client].id, 
+            id: client.clientId, 
             playerStates: playerStates
         });
         client.send(message);
@@ -30,17 +30,15 @@ wss.broadcast = function broadcast(players) {
 wss.on('connection', function(ws) {
     ws.on('message', function(message) {
         var data = JSON.parse(message);
-        players[ws].state = data.state;
-    });
-    ws.on('close', function() {
-        delete players[ws];
+        ws.playerState = data.state;
     });
     clientId++;
-    players[ws] = {id:clientId, state:null};
+    ws.clientId = clientId;
+    ws.playerState = null;
 });
 
 server.listen(port);
 
 setInterval(function() {
-    wss.broadcast(players);
+    wss.broadcast();
 }, 100);
