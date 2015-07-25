@@ -181,7 +181,7 @@ function init()
     game = new FPGame(canvas.width, canvas.height);
 	
 	//loadLevel("Levels/" + qsParm['level']);
-    loadLevel("Levels/CrazyJumps.xml");
+    loadLevel("Levels/Jump.xml");
     
    connect();
 }

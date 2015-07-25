@@ -45,9 +45,17 @@ function FPGame(w, h)
         }
         this.player.update(this);
         
+        var states = this.playerStates;
+        
+        for (var id in states)
+        {
+            if (id != this.id)
+                this.player.updateState(states[id]);
+        }
+        
         if (ws != null)
         {
-            var stateMessage = {id: this.id, state: this.player.toJSON()};
+            var stateMessage = {id: this.id, state: this.player.getPlayerState(this)};
             ws.send(JSON.stringify(stateMessage));
         }
     }

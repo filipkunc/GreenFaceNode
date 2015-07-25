@@ -74,6 +74,28 @@ function FPPlayer(w, h)
     this.damageCounter = 0;
     this.deathCounter = 0;
     
+    this.getPlayerState = function(game)
+    {
+        return {
+            x: this.x - this.worldOffsetX,
+            y: this.y - this.worldOffsetY,
+            moveX: this.moveX,
+            moveY: this.moveY,
+            jumping: this.jumping,
+            speedUpCounter: this.speedUpCounter,
+            alpha: this.alpha,
+            moveCounter: this.moveCounter,
+            jumpCounter: this.jumpCounter,
+            animationCounter: this.animationCounter,
+            leftOriented: this.leftOriented,
+            lives: this.lives,
+            damageCounter: this.damageCounter,
+            deathCounter: this.deathCounter,
+            jumpCounter: this.jumpCounter,
+            inputAcceleration: game.inputAcceleration
+        };
+    }
+    
     this.rect = function()
     {
         return new FPRect(this.x, this.y, playerSize, playerSize);
@@ -88,6 +110,130 @@ function FPPlayer(w, h)
     this.falling = function()
     {
         return this.moveY < 0.0 && this.jumping;
+    }
+    
+    this.updateState = function(playerState)
+    {
+        if (playerState.lives <= 0)
+        {
+            playerState.animationCounter++;
+
+            if (playerState.animationCounter > 10)
+            {
+                if (++playerState.deathCounter >= 3)
+                    playerState.deathCounter = 1;
+                playerState.animationCounter = 0;
+            }
+
+            return;
+        }
+        
+        var inputAcceleration = playerState.inputAcceleration;
+    	var moveLeftOrRight = false;
+    	
+    	if (playerState.speedUpCounter > 0)
+    	{
+    	    if (++playerState.speedUpCounter > maxSpeedUpCount)
+    	    {
+    	        playerState.speedUpCounter = 0;
+	        }
+	    }
+	    
+	    var currentMaxSpeed = playerState.speedUpCounter > 0 ? maxSpeed * speedPowerUp : maxSpeed;
+	    
+    	if (inputAcceleration.x < 0.0)
+    	{
+    		if (playerState.moveX < 0.0)
+    			playerState.moveX += Math.abs(inputAcceleration.x) * acceleration * changeDirectionSpeed;
+    		if (playerState.moveX < currentMaxSpeed)
+    			playerState.moveX += Math.abs(inputAcceleration.x) * acceleration;
+    		moveLeftOrRight = true;
+    		playerState.leftOriented = true;
+    	}
+    	else if (inputAcceleration.x > 0.0)
+    	{
+    		if (playerState.moveX > 0.0)
+    			playerState.moveX -= Math.abs(inputAcceleration.x) * acceleration * changeDirectionSpeed;
+    		if (playerState.moveX > -currentMaxSpeed)
+    			playerState.moveX -= Math.abs(inputAcceleration.x) * acceleration;
+    		moveLeftOrRight = true;
+    		playerState.leftOriented = false;
+    	}
+    	if (!playerState.jumping && inputAcceleration.y > 0.0)
+    	{
+    		if (playerState.moveY < upSpeed)
+    			playerState.moveY = upSpeed;
+    		playerState.jumping = true;
+    	}
+
+    	if (!moveLeftOrRight)
+    	{
+    		if (Math.abs(playerState.moveX) < deceleration)
+    			playerState.moveX = 0.0;
+    		else if (playerState.moveX > 0.0)
+    			playerState.moveX -= deceleration;
+    		else if (playerState.moveX < 0.0)
+    			playerState.moveX += deceleration;
+    	}	
+
+        playerState.moveY -= deceleration;
+        if (playerState.moveY < maxFallSpeed)
+        	playerState.moveY = maxFallSpeed;
+    	playerState.jumping = true;
+    	
+        playerState.x -= playerState.moveX;
+        if (this.collisionLeftRightState(game, playerState))
+            playerState.moveX = 0.0;
+        playerState.y -= playerState.moveY;
+        this.collisionUpDownState(game, playerState);
+    	
+    	playerState.alpha += 0.07;
+    	if (playerState.alpha > mathPi)
+    	    playerState.alpha -= mathPi;
+    	    
+    	var moveSpeed = Math.abs(playerState.moveX);
+
+        if (playerState.jumping)
+        {
+            playerState.moveCounter = 3;
+            playerState.animationCounter++;
+
+            if (playerState.animationCounter > 10)
+            {
+                if (++playerState.jumpCounter >= 2)
+                {
+                    playerState.jumpCounter = 1;
+                    playerState.animationCounter = 10;
+                }
+            }
+        }
+        else
+        {
+            playerState.jumpCounter = 0;
+            playerState.animationCounter += Math.max(moveSpeed / maxSpeed, 0.6);
+
+            if (playerState.animationCounter > 5)
+            {
+                if (!moveLeftOrRight && moveSpeed < 3.5)
+                {
+                    if (++playerState.moveCounter >= 4)
+                    {
+                        playerState.moveCounter = 3;
+                        playerState.animationCounter = 6;
+                    }
+                    else
+                    {
+                        playerState.animationCounter = 0;
+                    }            
+                }
+                else
+                {
+                    if (++playerState.moveCounter >= 4)
+                        playerState.moveCounter = 0;
+                    playerState.animationCounter = 0;
+                }
+            }
+        }
     }        
     
     this.update = function(game)
@@ -217,6 +363,62 @@ function FPPlayer(w, h)
         this.worldOffsetY = game.worldOffsetY;
     }
     
+    this.collisionLeftRightState = function(game, playerState)
+    {
+    	var isColliding = false;
+
+    	for (i in game.gameObjects)
+    	{
+            var playerStateRect = new FPRect(playerState.x + this.worldOffsetX, playerState.y + this.worldOffsetY, playerSize, playerSize);   
+    	    var platform = game.gameObjects[i];
+    	    if (platform.isPlatform())
+    		{
+    			var intersection = FPRectIntersection(platform.rect(), playerStateRect);
+    			if (intersection.isEmptyWithTolerance())
+    			    continue;
+
+    			if (platform.rect().left() > playerStateRect.left())
+    			{
+    			    if (platform.isMovable())
+    			    {
+    			        platform.move(intersection.size.width, 0.0);
+    			        if (platform.collisionLeftRight(game))
+    			        {
+    			            platform.move(-intersection.size.width, 0.0);
+                            playerState.x -= intersection.size.width;
+    			            isColliding = true;
+			            }
+			        }
+			        else
+			        {
+                        playerState.x -= intersection.size.width;
+			            isColliding = true;
+		            }
+    			}
+    			else if (platform.rect().right() < playerStateRect.right())
+    			{
+    				if (platform.isMovable())
+    			    {
+    			        platform.move(-intersection.size.width, 0.0);
+    			        if (platform.collisionLeftRight(game))
+    			        {
+    			            platform.move(intersection.size.width, 0.0);
+                            playerState.x += intersection.size.width;
+    			            isColliding = true;
+			            }
+			        }
+			        else
+			        {
+                        playerState.x += intersection.size.width;
+			            isColliding = true;
+		            }
+    			}
+    		}
+    	}
+
+    	return isColliding;
+    }
+    
     this.collisionLeftRight = function(game)
     {
     	var isColliding = false;
@@ -265,6 +467,50 @@ function FPPlayer(w, h)
 			            game.moveWorld(-intersection.size.width, 0.0);
 			            isColliding = true;
 		            }
+    			}
+    		}
+    	}
+
+    	return isColliding;
+    }
+    
+    this.collisionUpDownState = function(game, playerState)
+    {
+    	var isColliding = false;
+
+    	for (i in game.gameObjects)
+    	{
+            var playerStateRect = new FPRect(playerState.x + this.worldOffsetX, playerState.y + this.worldOffsetY, playerSize, playerSize);
+    	    var platform = game.gameObjects[i];
+    		if (platform.isPlatform())
+    		{
+    			var intersection = FPRectIntersection(platform.rect(), playerStateRect);
+    			if (intersection.isEmptyWithTolerance())
+    				continue;
+
+    			if (platform.rect().bottom() < playerStateRect.bottom())
+    			{
+    				if (playerState.moveY > 0.0)
+    					playerState.moveY = 0.0;
+    			
+                    playerState.y += intersection.size.height;
+    				isColliding = true;
+    			}
+    			else if (playerState.moveY < 0.0)
+    			{
+    				if (platform.rect().top() > playerStateRect.bottom() - tolerance + playerState.moveY)
+    				{
+    					playerState.moveY = 0.0;
+    					playerState.jumping = false;
+                        playerState.y -= intersection.size.height;
+    					isColliding = true;
+    				}
+    			}
+    			else if (platform.rect().top() > playerStateRect.bottom() - tolerance)
+    			{
+    				playerState.jumping = false;
+                    playerState.y -= intersection.size.height;
+    				isColliding = true;
     			}
     		}
     	}
@@ -330,23 +576,7 @@ function FPPlayer(w, h)
             }
         }
     }
-    
-    this.toJSON = function()
-    {
-        var state = {
-            "x" : this.x - this.worldOffsetX,
-            "y" : this.y - this.worldOffsetY,
-            "leftOriented": this.leftOriented,
-            "lives": this.lives,
-            "jumping": this.jumping,
-            "deathCounter": this.deathCounter,
-            "jumpCounter": this.jumpCounter,
-            "moveCounter": this.moveCounter
-        };
         
-        return state;
-    }
-    
     this.drawState = function(context, state, id)
     {
         context.save();
