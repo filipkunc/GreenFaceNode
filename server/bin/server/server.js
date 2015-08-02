@@ -66,13 +66,16 @@ var GameServer = (function (_super) {
     GameServer.prototype.gameLoop = function () {
         //for (var i = 0; i < 4; i++)
         this.game.update();
-        if (++this.broadcastCounter > 3) {
-            this.broadcastFull();
-            this.broadcastCounter = 0;
-        }
-        else {
-            this.broadcastLight();
-        }
+        this.broadcastFull();
+        // if (++this.broadcastCounter > 3)
+        // {
+        //     this.broadcastFull();
+        //     this.broadcastCounter = 0;
+        // }
+        // else
+        // {
+        //     this.broadcastLight();
+        // }
     };
     GameServer.prototype.broadcastLight = function () {
         var lightPlayers = [];

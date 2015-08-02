@@ -78,15 +78,16 @@ class GameServer extends ws.Server
     {
         //for (var i = 0; i < 4; i++)
             this.game.update();
-        if (++this.broadcastCounter > 3)
-        {
             this.broadcastFull();
-            this.broadcastCounter = 0;
-        }
-        else
-        {
-            this.broadcastLight();
-        }
+        // if (++this.broadcastCounter > 3)
+        // {
+        //     this.broadcastFull();
+        //     this.broadcastCounter = 0;
+        // }
+        // else
+        // {
+        //     this.broadcastLight();
+        // }
     }
 
     broadcastLight(): void
