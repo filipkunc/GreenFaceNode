@@ -8,13 +8,7 @@ var Platform = (function () {
         this.heightSegments = heightSegments;
     }
     Platform.prototype.serialize = function () {
-        return {
-            type: "Platform",
-            x: this.x,
-            y: this.y,
-            widthSegments: this.widthSegments,
-            heightSegments: this.heightSegments,
-        };
+        return null;
     };
     Platform.prototype.deserialize = function (data) {
     };

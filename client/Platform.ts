@@ -18,13 +18,7 @@ class Platform implements IGameObject
 
     serialize(): any
     {
-        return {
-            type: "Platform",
-            x: this.x,
-            y: this.y,
-            widthSegments: this.widthSegments,
-            heightSegments: this.heightSegments,
-        }
+        return null;
     }
 
     deserialize(data: any): void

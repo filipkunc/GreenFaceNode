@@ -29,9 +29,7 @@ var LevelLoader = (function () {
                 this.game.addGameObject(new Elevator(state.x, state.y, state.endX, state.endY, state.widthSegments));
             }
         }
-        //this.game.moveWorld(this.game.width / 2.0 - 32.0 - playerOffsetX, this.game.height / 2.0 - 32.0 - playerOffsetY);
-        //return new Point(this.game.width / 2.0 - 32.0 - playerOffsetX, this.game.height / 2.0 - 32.0 - playerOffsetY);
-        return playerSpawn;
+        return new Point(this.game.width / 2.0 - 32.0 - playerSpawn.x, this.game.height / 2.0 - 32.0 - playerSpawn.y);
     };
     LevelLoader.prototype.parseXML = function (xmlDoc) {
         var posX, posY, widthSegments, heightSegments;

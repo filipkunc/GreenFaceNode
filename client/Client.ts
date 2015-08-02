@@ -62,7 +62,6 @@ class Client
         var url = location.origin.replace(/^http/, 'ws');
         this.ws = new WebSocket(url);
         this.ws.onopen = e => {
-            this.ws.send(JSON.stringify({ type: "level", content: this.game.serialize()}));
             this.opened = true;
         };
         this.ws.onerror = e => {

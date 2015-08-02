@@ -46,7 +46,6 @@ var Client = (function () {
         var url = location.origin.replace(/^http/, 'ws');
         this.ws = new WebSocket(url);
         this.ws.onopen = function (e) {
-            _this.ws.send(JSON.stringify({ type: "level", content: _this.game.serialize() }));
             _this.opened = true;
         };
         this.ws.onerror = function (e) {
