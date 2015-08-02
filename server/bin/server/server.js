@@ -99,6 +99,7 @@ var GameServer = (function (_super) {
             var fullState = _this.game.serialize();
             fullState.t = "f";
             fullState.i = index;
+            fullState.d = new Date().getTime();
             var message = JSON.stringify(fullState);
             client.send(message);
         });
@@ -111,6 +112,10 @@ var port = process.env.PORT || 1337;
 var server = http.createServer(app);
 var gameServer = new GameServer({ server: server });
 server.listen(port);
+function sleepFor(sleepDuration) {
+    var now = new Date().getTime();
+    while (new Date().getTime() < now + sleepDuration) { }
+}
 setInterval(function () {
     gameServer.gameLoop();
 }, 1000 / 60.0);

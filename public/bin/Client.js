@@ -7,6 +7,7 @@ var Client = (function () {
         this.opened = false;
         this.inputAcceleration = new Point(0.0, 0.0);
         this.playerIndex = 0;
+        this.lastTimeDiffs = [];
         this.canvas = document.getElementById('canvas');
         this.context = this.canvas.getContext('2d');
         this.game = new Game(this.canvas.width, this.canvas.height);
@@ -31,7 +32,7 @@ var Client = (function () {
             player.inputAcceleration.y = this.inputAcceleration.y;
             inputChanged = true;
         }
-        //this.game.update();
+        this.game.update();
         if (this.opened && inputChanged) {
             var message = {
                 t: "i",
@@ -49,6 +50,14 @@ var Client = (function () {
         this.context.translate(playerOffsetX, playerOffsetY);
         this.game.draw(this.context);
         this.context.restore();
+        this.context.fillStyle = "white";
+        this.context.font = "10px Source Code Pro";
+        for (var i = 0; i < this.lastTimeDiffs.length; i++)
+            this.context.fillText(this.lastTimeDiffs[i].toString() + " ms", 5.0, 20.0 + i * 10.0);
+        if (this.lastTimeDiffs.length > 20) {
+            this.lastTimeDiffs.splice(0, this.lastTimeDiffs.length - 20);
+        }
+        this.context.fillStyle = "black";
     };
     Client.prototype.connect = function () {
         var _this = this;
@@ -68,6 +77,8 @@ var Client = (function () {
             if (message.t == "f") {
                 _this.playerIndex = message.i;
                 _this.game.deserialize(message);
+                var diff = message.d - new Date().getTime();
+                _this.lastTimeDiffs.push(diff);
             }
             else if (message.t == "l") {
                 var lightPlayers = message.p;

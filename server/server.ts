@@ -115,6 +115,7 @@ class GameServer extends ws.Server
             var fullState = this.game.serialize();
             fullState.t = "f";
             fullState.i = index;
+            fullState.d = new Date().getTime();
             var message = JSON.stringify(fullState);
             client.send(message);
         });
@@ -130,6 +131,11 @@ var server = http.createServer(app);
 var gameServer = new GameServer({server:server});
 
 server.listen(port);
+
+function sleepFor( sleepDuration ){
+    var now = new Date().getTime();
+    while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
+}
 
 setInterval(() => {
     gameServer.gameLoop();

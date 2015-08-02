@@ -13,6 +13,7 @@ class Client
     opened: boolean = false;
     inputAcceleration: Point = new Point(0.0, 0.0);
     playerIndex: number = 0;
+    lastTimeDiffs: number[] = [];
 
     constructor()
     {
@@ -49,7 +50,7 @@ class Client
             inputChanged = true;
         }
 
-        //this.game.update();
+        this.game.update();
 
         if (this.opened && inputChanged)
         {
@@ -69,6 +70,20 @@ class Client
         this.context.translate(playerOffsetX, playerOffsetY);
         this.game.draw(this.context);
         this.context.restore();
+
+
+        this.context.fillStyle = "white";
+        this.context.font = "10px Source Code Pro";
+
+        for (var i = 0; i < this.lastTimeDiffs.length; i++)
+                this.context.fillText(this.lastTimeDiffs[i].toString() + " ms", 5.0, 20.0 + i * 10.0);
+
+        if (this.lastTimeDiffs.length > 20)
+        {
+            this.lastTimeDiffs.splice(0, this.lastTimeDiffs.length - 20);
+        }
+
+        this.context.fillStyle = "black";
     }
 
     connect(): void
@@ -90,6 +105,8 @@ class Client
             {
                 this.playerIndex = message.i;
                 this.game.deserialize(message);
+                var diff = message.d - new Date().getTime();
+                this.lastTimeDiffs.push(diff);
             }
             else if (message.t == "l")
             {
