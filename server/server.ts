@@ -76,7 +76,7 @@ class GameServer extends ws.Server
 
     gameLoop(): void
     {
-        for (var i = 0; i < 4; i++)
+        //for (var i = 0; i < 4; i++)
             this.game.update();
         if (++this.broadcastCounter > 3)
         {
@@ -132,4 +132,4 @@ server.listen(port);
 
 setInterval(() => {
     gameServer.gameLoop();
-}, 1000 / 15.0);
+}, 1000 / 60.0);

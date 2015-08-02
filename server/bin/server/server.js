@@ -64,8 +64,8 @@ var GameServer = (function (_super) {
         });
     };
     GameServer.prototype.gameLoop = function () {
-        for (var i = 0; i < 4; i++)
-            this.game.update();
+        //for (var i = 0; i < 4; i++)
+        this.game.update();
         if (++this.broadcastCounter > 3) {
             this.broadcastFull();
             this.broadcastCounter = 0;
@@ -110,4 +110,4 @@ var gameServer = new GameServer({ server: server });
 server.listen(port);
 setInterval(function () {
     gameServer.gameLoop();
-}, 1000 / 15.0);
+}, 1000 / 60.0);
