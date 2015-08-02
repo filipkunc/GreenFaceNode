@@ -31,7 +31,7 @@ var Client = (function () {
             player.inputAcceleration.y = this.inputAcceleration.y;
             inputChanged = true;
         }
-        this.game.update();
+        //this.game.update();
         if (this.opened && inputChanged) {
             var message = {
                 t: "i",

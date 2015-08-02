@@ -49,7 +49,7 @@ class Client
             inputChanged = true;
         }
 
-        this.game.update();
+        //this.game.update();
 
         if (this.opened && inputChanged)
         {
