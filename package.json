@@ -13,6 +13,6 @@
     "node": "0.10.x"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/bin/server/server.js"
   }
 }

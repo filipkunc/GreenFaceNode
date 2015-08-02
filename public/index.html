@@ -2,19 +2,14 @@
 <html lang="en">
     <head>
         <title>Game Simulation</title>
-        <script type="text/javascript" src="PortedClasses/FPGraphics.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPPlatform.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPMovablePlatform.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPPlayer.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPDiamond.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPExit.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPElevator.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPTrampoline.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPMagnet.js"></script>
-        <script type="text/javascript" src="PortedClasses/GFSoldier.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPSpeedPowerUp.js"></script>
-        <script type="text/javascript" src="PortedClasses/FPGame.js"></script>
-        <script type="text/javascript" src="PortedClasses/Game.js"></script>
+        <script type="text/javascript" src="bin/Images.js"></script>
+        <script type="text/javascript" src="bin/CommonTypes.js"></script>
+        <script type="text/javascript" src="bin/Platform.js"></script>
+        <script type="text/javascript" src="bin/Elevator.js"></script>
+        <script type="text/javascript" src="bin/Player.js"></script>
+        <script type="text/javascript" src="bin/Game.js"></script>
+        <script type="text/javascript" src="bin/LevelLoader.js"></script>
+        <script type="text/javascript" src="bin/Client.js"></script>
         <style type="text/css">
             body { font-family: Arial, Helvetica, sans-serif; margin: 0px; padding: 0px; background-color:rgb(150,150,150); }
             canvas { }
@@ -30,7 +25,7 @@
             }
         </style>
     </head>
-    <body onkeydown="keyDown(event);" onkeyup="keyUp(event);">
+    <body>
         <div id="game">
             <canvas id="canvas" width="800" height="600">
             </canvas>
