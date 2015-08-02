@@ -7,6 +7,13 @@ var Platform = (function () {
         this.widthSegments = widthSegments;
         this.heightSegments = heightSegments;
     }
+    Object.defineProperty(Platform.prototype, "hasNetworkState", {
+        get: function () {
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Platform.prototype.serialize = function () {
         return null;
     };

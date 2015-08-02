@@ -72,10 +72,27 @@ class Client
         };
         this.ws.onmessage = e => {
             var message = JSON.parse(e.data);
-            if (message.type == "gameState")
+            if (message.type == "full")
             {
                 this.playerIndex = message.playerIndex;
                 this.game.deserialize(message);
+            }
+            else if (message.type == "light")
+            {
+                var lightPlayers = message.players;
+                if (this.game.players.length == lightPlayers.length)
+                {
+                    for (var i = 0; i < lightPlayers.length; i++)
+                    {
+                        if (i != this.playerIndex)
+                        {
+                            this.game.players[i].inputAcceleration.x = lightPlayers[i][0];
+                            this.game.players[i].inputAcceleration.y = lightPlayers[i][1];
+                        }
+                        this.game.players[i].x = lightPlayers[i][2];
+                        this.game.players[i].y = lightPlayers[i][3];
+                    }
+                }
             }
         };
     }

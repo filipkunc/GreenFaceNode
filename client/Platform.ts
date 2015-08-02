@@ -16,6 +16,11 @@ class Platform implements IGameObject
         this.heightSegments = heightSegments;
     }
 
+    get hasNetworkState(): boolean
+    {
+        return false;
+    }
+
     serialize(): any
     {
         return null;

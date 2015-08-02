@@ -215,6 +215,7 @@ interface IGameObject
     isVisible: boolean;
     isPlatform: boolean;
     isMovable: boolean;
+    hasNetworkState: boolean;
     rect: Rect;
     update(game: IGame): void;
     draw(context: CanvasRenderingContext2D): void;

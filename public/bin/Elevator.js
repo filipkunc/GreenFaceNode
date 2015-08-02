@@ -13,31 +13,37 @@ var Elevator = (function () {
         this.endY = endY;
         this.widthSegments = widthSegments;
     }
+    Object.defineProperty(Elevator.prototype, "hasNetworkState", {
+        get: function () {
+            return true;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Elevator.prototype.serialize = function () {
         return {
-            type: "Elevator",
             x: this.x,
             y: this.y,
-            startX: this.startX,
-            startY: this.startY,
-            endX: this.endX,
-            endY: this.endY,
-            widthSegments: this.widthSegments,
-            textureIndex: this.textureIndex,
-            animationCounter: this.animationCounter,
+            // startX: this.startX,
+            // startY: this.startY,
+            // endX: this.endX,
+            // endY: this.endY,
+            // widthSegments: this.widthSegments,
+            // textureIndex: this.textureIndex,
+            // animationCounter: this.animationCounter,
             movingToEnd: this.movingToEnd
         };
     };
     Elevator.prototype.deserialize = function (data) {
         this.x = data.x;
         this.y = data.y;
-        this.startX = data.startX;
-        this.startY = data.startY;
-        this.endX = data.endX;
-        this.endY = data.endY;
-        this.widthSegments = data.widthSegments;
-        this.textureIndex = data.textureIndex;
-        this.animationCounter = data.animationCounter;
+        // this.startX = data.startX;
+        // this.startY = data.startY;
+        // this.endX = data.endX;
+        // this.endY = data.endY;
+        // this.widthSegments = data.widthSegments;
+        // this.textureIndex = data.textureIndex;
+        // this.animationCounter = data.animationCounter;
         this.movingToEnd = data.movingToEnd;
     };
     Object.defineProperty(Elevator.prototype, "isPlatform", {

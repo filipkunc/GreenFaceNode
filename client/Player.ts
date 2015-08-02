@@ -32,20 +32,19 @@ class Player implements IPlayer
     serialize(): any
     {
         return {
-            type: "Player",
             x: this.x,
             y: this.y,
             moveX: this.moveX,
             moveY: this.moveY,
             jumping: this.jumping,
-            moveCounter: this.moveCounter,
-            jumpCounter: this.jumpCounter,
-            animationCounter: this.animationCounter,
+            // moveCounter: this.moveCounter,
+            // jumpCounter: this.jumpCounter,
+            // animationCounter: this.animationCounter,
             leftOriented: this.leftOriented,
-            lives: this.lives,
-            damageCounter: this.damageCounter,
-            deathCounter: this.deathCounter,
-            isVisible: this.isVisible
+            lives: this.lives
+            // damageCounter: this.damageCounter,
+            // deathCounter: this.deathCounter,
+            // isVisible: this.isVisible
         };
     }
 
@@ -56,14 +55,14 @@ class Player implements IPlayer
         this.moveX = data.moveX;
         this.moveY = data.moveY;
         this.jumping = data.jumping;
-        this.moveCounter = data.moveCounter;
-        this.jumpCounter = data.jumpCounter;
-        this.animationCounter = data.animationCounter;
+        // this.moveCounter = data.moveCounter;
+        // this.jumpCounter = data.jumpCounter;
+        // this.animationCounter = data.animationCounter;
         this.leftOriented = data.leftOriented;
         this.lives = data.lives;
-        this.damageCounter = data.damageCounter;
-        this.deathCounter = data.deathCounter;
-        this.isVisible = data.isVisible;
+        // this.damageCounter = data.damageCounter;
+        // this.deathCounter = data.deathCounter;
+        // this.isVisible = data.isVisible;
     }
 
     get rect(): Rect

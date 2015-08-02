@@ -10,8 +10,10 @@ var Game = (function () {
     }
     Game.prototype.serialize = function () {
         var gameObjectStates = [];
-        for (var i = 0; i < this.gameObjects.length; i++)
-            gameObjectStates.push(this.gameObjects[i].serialize());
+        for (var i = 0; i < this.gameObjects.length; i++) {
+            if (this.gameObjects[i].hasNetworkState)
+                gameObjectStates.push(this.gameObjects[i].serialize());
+        }
         var playerStates = [];
         for (var i = 0; i < this.players.length; i++)
             playerStates.push(this.players[i].serialize());
@@ -23,11 +25,15 @@ var Game = (function () {
     Game.prototype.deserialize = function (data) {
         var gameObjectStates = data.gameObjectStates;
         var playerStates = data.playerStates;
-        for (var i = 0; i < gameObjectStates.length; i++)
-            this.gameObjects[i].deserialize(gameObjectStates[i]);
-        this.players = [];
-        while (playerStates.length > this.players.length)
-            this.players.push(new Player(this.width, this.height));
+        for (var i = 0, j = 0; i < this.gameObjects.length; i++) {
+            if (this.gameObjects[i].hasNetworkState)
+                this.gameObjects[i].deserialize(gameObjectStates[j++]);
+        }
+        if (this.players.length != playerStates.length) {
+            this.players = [];
+            while (playerStates.length > this.players.length)
+                this.players.push(new Player(this.width, this.height));
+        }
         for (var i = 0; i < playerStates.length; i++)
             this.players[i].deserialize(playerStates[i]);
     };

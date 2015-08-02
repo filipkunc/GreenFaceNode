@@ -19,7 +19,10 @@ class Game implements IGame
     {
         var gameObjectStates = [];
         for (var i = 0; i < this.gameObjects.length; i++)
-            gameObjectStates.push(this.gameObjects[i].serialize());
+        {
+            if (this.gameObjects[i].hasNetworkState)
+                gameObjectStates.push(this.gameObjects[i].serialize());
+        }
 
         var playerStates = [];
         for (var i = 0; i < this.players.length; i++)
@@ -35,12 +38,18 @@ class Game implements IGame
     {
         var gameObjectStates = <Array<any>>data.gameObjectStates;
         var playerStates = <Array<any>>data.playerStates;
-        for (var i = 0; i < gameObjectStates.length; i++)
-            this.gameObjects[i].deserialize(gameObjectStates[i]);
+        for (var i = 0, j = 0; i < this.gameObjects.length; i++)
+        {
+            if (this.gameObjects[i].hasNetworkState)
+                this.gameObjects[i].deserialize(gameObjectStates[j++]);
+        }
 
-        this.players = [];
-        while (playerStates.length > this.players.length )
-            this.players.push(new Player(this.width, this.height));
+        if (this.players.length != playerStates.length)
+        {
+            this.players = [];
+            while (playerStates.length > this.players.length )
+                this.players.push(new Player(this.width, this.height));
+        }
 
         for (var i = 0; i < playerStates.length; i++)
             this.players[i].deserialize(playerStates[i]);

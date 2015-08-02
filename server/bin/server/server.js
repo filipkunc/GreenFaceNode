@@ -66,18 +66,37 @@ var GameServer = (function (_super) {
         if (this.game == null)
             return;
         this.game.update();
-        if (++this.broadcastCounter > 10) {
-            this.broadcast();
+        if (++this.broadcastCounter > 20) {
+            this.broadcastFull();
             this.broadcastCounter = 0;
         }
+        else {
+            this.broadcastLight();
+        }
     };
-    GameServer.prototype.broadcast = function () {
+    GameServer.prototype.broadcastLight = function () {
+        var lightPlayers = [];
+        this.game.players.forEach(function (player) {
+            lightPlayers.push([
+                player.inputAcceleration.x, player.inputAcceleration.y,
+                player.x, player.y]);
+        });
+        var lightState = {
+            type: "light",
+            players: lightPlayers
+        };
+        var message = JSON.stringify(lightState);
+        this.clients.forEach(function (client, index) {
+            client.send(message);
+        });
+    };
+    GameServer.prototype.broadcastFull = function () {
         var _this = this;
         this.clients.forEach(function (client, index) {
-            var gameState = _this.game.serialize();
-            gameState.type = "gameState";
-            gameState.playerIndex = index;
-            var message = JSON.stringify(gameState);
+            var fullState = _this.game.serialize();
+            fullState.type = "full";
+            fullState.playerIndex = index;
+            var message = JSON.stringify(fullState);
             client.send(message);
         });
     };

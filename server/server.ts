@@ -79,20 +79,43 @@ class GameServer extends ws.Server
             return;
 
         this.game.update();
-        if (++this.broadcastCounter > 10)
+        if (++this.broadcastCounter > 20)
         {
-            this.broadcast();
+            this.broadcastFull();
             this.broadcastCounter = 0;
+        }
+        else
+        {
+            this.broadcastLight();
         }
     }
 
-    broadcast() : void
+    broadcastLight(): void
+    {
+        var lightPlayers = [];
+        this.game.players.forEach((player) =>
+        {
+            lightPlayers.push([
+                player.inputAcceleration.x, player.inputAcceleration.y,
+                player.x, player.y] );
+        });
+        var lightState = {
+            type: "light",
+            players: lightPlayers
+        };
+        var message = JSON.stringify(lightState);
+        this.clients.forEach((client, index) => {
+            client.send(message);
+        });
+    }
+
+    broadcastFull() : void
     {
         this.clients.forEach((client, index) => {
-            var gameState = this.game.serialize();
-            gameState.type = "gameState";
-            gameState.playerIndex = index;
-            var message = JSON.stringify(gameState);
+            var fullState = this.game.serialize();
+            fullState.type = "full";
+            fullState.playerIndex = index;
+            var message = JSON.stringify(fullState);
             client.send(message);
         });
     }
