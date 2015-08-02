@@ -36,15 +36,29 @@ class Client
 
     draw(): void
     {
+        if (this.playerIndex >= this.game.players.length)
+            return;
+
+        var inputChanged = false;
         var player = this.game.players[this.playerIndex];
-        player.inputAcceleration = this.inputAcceleration;
+        if (player.inputAcceleration.x != this.inputAcceleration.x ||
+            player.inputAcceleration.y != this.inputAcceleration.y)
+        {
+            player.inputAcceleration.x = this.inputAcceleration.x;
+            player.inputAcceleration.y = this.inputAcceleration.y;
+            inputChanged = true;
+        }
+
         this.game.update();
-        var message = {
-            type: "input",
-            inputAcceleration: this.inputAcceleration
-        };
-        if (this.opened)
+
+        if (this.opened && inputChanged)
+        {
+            var message = {
+                t: "i",
+                i: [this.inputAcceleration.x, this.inputAcceleration.y]
+            };
             this.ws.send(JSON.stringify(message));
+        }
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
         var playerOffsetX = this.game.width / 2.0 - 32.0 - player.x;
         var playerOffsetY = this.game.height / 2.0 - 32.0 - player.y;
@@ -72,23 +86,23 @@ class Client
         };
         this.ws.onmessage = e => {
             var message = JSON.parse(e.data);
-            if (message.type == "full")
+            if (message.t == "f")
             {
-                this.playerIndex = message.playerIndex;
+                this.playerIndex = message.i;
                 this.game.deserialize(message);
             }
-            else if (message.type == "light")
+            else if (message.t == "l")
             {
-                var lightPlayers = message.players;
+                var lightPlayers = message.p;
                 if (this.game.players.length == lightPlayers.length)
                 {
                     for (var i = 0; i < lightPlayers.length; i++)
                     {
-                        if (i != this.playerIndex)
-                        {
-                            this.game.players[i].inputAcceleration.x = lightPlayers[i][0];
-                            this.game.players[i].inputAcceleration.y = lightPlayers[i][1];
-                        }
+                        if (i == this.playerIndex)
+                            continue;
+
+                        this.game.players[i].inputAcceleration.x = lightPlayers[i][0];
+                        this.game.players[i].inputAcceleration.y = lightPlayers[i][1];
                         this.game.players[i].x = lightPlayers[i][2];
                         this.game.players[i].y = lightPlayers[i][3];
                     }

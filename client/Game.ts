@@ -29,15 +29,15 @@ class Game implements IGame
             playerStates.push(this.players[i].serialize());
 
         return {
-            gameObjectStates: gameObjectStates,
-            playerStates: playerStates
+            g: gameObjectStates,
+            p: playerStates
         };
     }
 
     deserialize(data: any): void
     {
-        var gameObjectStates = <Array<any>>data.gameObjectStates;
-        var playerStates = <Array<any>>data.playerStates;
+        var gameObjectStates = <Array<any>>data.g;
+        var playerStates = <Array<any>>data.p;
         for (var i = 0, j = 0; i < this.gameObjects.length; i++)
         {
             if (this.gameObjects[i].hasNetworkState)

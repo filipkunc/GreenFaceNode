@@ -52,9 +52,10 @@ var GameServer = (function (_super) {
         this.game.players.push(spawnedPlayer);
         client.on('message', function (message) {
             var data = JSON.parse(message);
-            if (data.type == "input") {
+            if (data.t == "i") {
                 var player = _this.game.players[_this.clients.indexOf(client)];
-                player.inputAcceleration = data.inputAcceleration;
+                player.inputAcceleration.x = data.i[0];
+                player.inputAcceleration.y = data.i[1];
             }
         });
         client.on('close', function (message) {
@@ -63,10 +64,9 @@ var GameServer = (function (_super) {
         });
     };
     GameServer.prototype.gameLoop = function () {
-        if (this.game == null)
-            return;
-        this.game.update();
-        if (++this.broadcastCounter > 20) {
+        for (var i = 0; i < 4; i++)
+            this.game.update();
+        if (++this.broadcastCounter > 3) {
             this.broadcastFull();
             this.broadcastCounter = 0;
         }
@@ -82,8 +82,8 @@ var GameServer = (function (_super) {
                 player.x, player.y]);
         });
         var lightState = {
-            type: "light",
-            players: lightPlayers
+            t: "l",
+            p: lightPlayers
         };
         var message = JSON.stringify(lightState);
         this.clients.forEach(function (client, index) {
@@ -94,8 +94,8 @@ var GameServer = (function (_super) {
         var _this = this;
         this.clients.forEach(function (client, index) {
             var fullState = _this.game.serialize();
-            fullState.type = "full";
-            fullState.playerIndex = index;
+            fullState.t = "f";
+            fullState.i = index;
             var message = JSON.stringify(fullState);
             client.send(message);
         });
@@ -110,4 +110,4 @@ var gameServer = new GameServer({ server: server });
 server.listen(port);
 setInterval(function () {
     gameServer.gameLoop();
-}, 1000 / 60.0);
+}, 1000 / 15.0);

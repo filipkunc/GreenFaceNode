@@ -60,10 +60,11 @@ class GameServer extends ws.Server
 
         client.on('message', message => {
             var data = JSON.parse(message);
-            if (data.type == "input")
+            if (data.t == "i")
             {
                 var player = this.game.players[this.clients.indexOf(client)];
-                player.inputAcceleration = data.inputAcceleration;
+                player.inputAcceleration.x = data.i[0];
+                player.inputAcceleration.y = data.i[1];
             }
         });
 
@@ -75,11 +76,9 @@ class GameServer extends ws.Server
 
     gameLoop(): void
     {
-        if (this.game == null)
-            return;
-
-        this.game.update();
-        if (++this.broadcastCounter > 20)
+        for (var i = 0; i < 4; i++)
+            this.game.update();
+        if (++this.broadcastCounter > 3)
         {
             this.broadcastFull();
             this.broadcastCounter = 0;
@@ -100,8 +99,8 @@ class GameServer extends ws.Server
                 player.x, player.y] );
         });
         var lightState = {
-            type: "light",
-            players: lightPlayers
+            t: "l",
+            p: lightPlayers
         };
         var message = JSON.stringify(lightState);
         this.clients.forEach((client, index) => {
@@ -113,8 +112,8 @@ class GameServer extends ws.Server
     {
         this.clients.forEach((client, index) => {
             var fullState = this.game.serialize();
-            fullState.type = "full";
-            fullState.playerIndex = index;
+            fullState.t = "f";
+            fullState.i = index;
             var message = JSON.stringify(fullState);
             client.send(message);
         });
@@ -133,4 +132,4 @@ server.listen(port);
 
 setInterval(() => {
     gameServer.gameLoop();
-}, 1000 / 60.0);
+}, 1000 / 15.0);

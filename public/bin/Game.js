@@ -18,13 +18,13 @@ var Game = (function () {
         for (var i = 0; i < this.players.length; i++)
             playerStates.push(this.players[i].serialize());
         return {
-            gameObjectStates: gameObjectStates,
-            playerStates: playerStates
+            g: gameObjectStates,
+            p: playerStates
         };
     };
     Game.prototype.deserialize = function (data) {
-        var gameObjectStates = data.gameObjectStates;
-        var playerStates = data.playerStates;
+        var gameObjectStates = data.g;
+        var playerStates = data.p;
         for (var i = 0, j = 0; i < this.gameObjects.length; i++) {
             if (this.gameObjects[i].hasNetworkState)
                 this.gameObjects[i].deserialize(gameObjectStates[j++]);
