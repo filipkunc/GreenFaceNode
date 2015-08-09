@@ -20,6 +20,7 @@ class Player implements IPlayer
     damageCounter: number = 0;
     deathCounter: number = 0;
     inputAcceleration: Point = new Point(0.0, 0.0);
+    lastInputId: number = 0;
 
     constructor(w: number, h: number)
     {

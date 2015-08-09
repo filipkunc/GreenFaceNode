@@ -39,6 +39,7 @@ class GameServer extends ws.Server
     game: Game = null;
     broadcastCounter: number = 0;
     playerSpawn: Point;
+    lastInputTime: number = 0;
 
     constructor(options?: ws.IServerOptions, callback?: Function)
     {
@@ -60,12 +61,10 @@ class GameServer extends ws.Server
 
         client.on('message', message => {
             var data = JSON.parse(message);
-            if (data.t == "i")
-            {
-                var player = this.game.players[this.clients.indexOf(client)];
-                player.inputAcceleration.x = data.i[0];
-                player.inputAcceleration.y = data.i[1];
-            }
+            var player = this.game.players[this.clients.indexOf(client)];
+            player.inputAcceleration.x = data.i[0];
+            player.inputAcceleration.y = data.i[1];
+            player.lastInputId = data.i[2];
         });
 
         client.on('close', message => {
@@ -76,47 +75,23 @@ class GameServer extends ws.Server
 
     gameLoop(): void
     {
-        //for (var i = 0; i < 4; i++)
-            this.game.update();
-            this.broadcastFull();
-        // if (++this.broadcastCounter > 3)
-        // {
-        //     this.broadcastFull();
-        //     this.broadcastCounter = 0;
-        // }
-        // else
-        // {
-        //     this.broadcastLight();
-        // }
-    }
-
-    broadcastLight(): void
-    {
-        var lightPlayers = [];
-        this.game.players.forEach((player) =>
+        this.game.update();
+        if (++this.broadcastCounter > 10)
         {
-            lightPlayers.push([
-                player.inputAcceleration.x, player.inputAcceleration.y,
-                player.x, player.y] );
-        });
-        var lightState = {
-            t: "l",
-            p: lightPlayers
-        };
-        var message = JSON.stringify(lightState);
-        this.clients.forEach((client, index) => {
-            client.send(message);
+            this.broadcast();
+            this.broadcastCounter = 0;
+        }
+        this.game.players.forEach((player, index) => {
+           player.lastInputId++;
         });
     }
 
-    broadcastFull() : void
+    broadcast() : void
     {
         this.clients.forEach((client, index) => {
-            var fullState = this.game.serialize();
-            fullState.t = "f";
-            fullState.i = index;
-            fullState.d = new Date().getTime();
-            var message = JSON.stringify(fullState);
+            var gameState = this.game.serialize();
+            gameState.i = [index, this.game.players[index].lastInputId];
+            var message = JSON.stringify(gameState);
             client.send(message);
         });
     }
@@ -126,16 +101,11 @@ var app = express();
 
 app.use(express.static(__dirname + '/../../../public'));
 
-var port = process.env.PORT || 1337;
+var port = process.env.PORT || 8888;
 var server = http.createServer(app);
 var gameServer = new GameServer({server:server});
 
 server.listen(port);
-
-function sleepFor( sleepDuration ){
-    var now = new Date().getTime();
-    while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
-}
 
 setInterval(() => {
     gameServer.gameLoop();

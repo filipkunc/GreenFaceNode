@@ -15,6 +15,7 @@ var Player = (function () {
         this.damageCounter = 0;
         this.deathCounter = 0;
         this.inputAcceleration = new Point(0.0, 0.0);
+        this.lastInputId = 0;
         this.screenWidth = w;
         this.screenHeight = h;
         this.x = w / 2.0 - playerSize / 2.0;

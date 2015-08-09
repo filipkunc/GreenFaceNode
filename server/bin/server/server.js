@@ -39,6 +39,7 @@ var GameServer = (function (_super) {
         _super.call(this, options, callback);
         this.game = null;
         this.broadcastCounter = 0;
+        this.lastInputTime = 0;
         this.game = new Game(800, 600);
         this.playerSpawn = loadJSONLevel("Platforms.json", this.game);
         this.on('connection', function (client) { return _this.clientConnected(client); });
@@ -52,11 +53,10 @@ var GameServer = (function (_super) {
         this.game.players.push(spawnedPlayer);
         client.on('message', function (message) {
             var data = JSON.parse(message);
-            if (data.t == "i") {
-                var player = _this.game.players[_this.clients.indexOf(client)];
-                player.inputAcceleration.x = data.i[0];
-                player.inputAcceleration.y = data.i[1];
-            }
+            var player = _this.game.players[_this.clients.indexOf(client)];
+            player.inputAcceleration.x = data.i[0];
+            player.inputAcceleration.y = data.i[1];
+            player.lastInputId = data.i[2];
         });
         client.on('close', function (message) {
             //console.log("disconnected: " + connectedIndex);
@@ -64,43 +64,21 @@ var GameServer = (function (_super) {
         });
     };
     GameServer.prototype.gameLoop = function () {
-        //for (var i = 0; i < 4; i++)
         this.game.update();
-        this.broadcastFull();
-        // if (++this.broadcastCounter > 3)
-        // {
-        //     this.broadcastFull();
-        //     this.broadcastCounter = 0;
-        // }
-        // else
-        // {
-        //     this.broadcastLight();
-        // }
-    };
-    GameServer.prototype.broadcastLight = function () {
-        var lightPlayers = [];
-        this.game.players.forEach(function (player) {
-            lightPlayers.push([
-                player.inputAcceleration.x, player.inputAcceleration.y,
-                player.x, player.y]);
-        });
-        var lightState = {
-            t: "l",
-            p: lightPlayers
-        };
-        var message = JSON.stringify(lightState);
-        this.clients.forEach(function (client, index) {
-            client.send(message);
+        if (++this.broadcastCounter > 10) {
+            this.broadcast();
+            this.broadcastCounter = 0;
+        }
+        this.game.players.forEach(function (player, index) {
+            player.lastInputId++;
         });
     };
-    GameServer.prototype.broadcastFull = function () {
+    GameServer.prototype.broadcast = function () {
         var _this = this;
         this.clients.forEach(function (client, index) {
-            var fullState = _this.game.serialize();
-            fullState.t = "f";
-            fullState.i = index;
-            fullState.d = new Date().getTime();
-            var message = JSON.stringify(fullState);
+            var gameState = _this.game.serialize();
+            gameState.i = [index, _this.game.players[index].lastInputId];
+            var message = JSON.stringify(gameState);
             client.send(message);
         });
     };
@@ -108,14 +86,10 @@ var GameServer = (function (_super) {
 })(ws.Server);
 var app = express();
 app.use(express.static(__dirname + '/../../../public'));
-var port = process.env.PORT || 1337;
+var port = process.env.PORT || 8888;
 var server = http.createServer(app);
 var gameServer = new GameServer({ server: server });
 server.listen(port);
-function sleepFor(sleepDuration) {
-    var now = new Date().getTime();
-    while (new Date().getTime() < now + sleepDuration) { }
-}
 setInterval(function () {
     gameServer.gameLoop();
 }, 1000 / 60.0);

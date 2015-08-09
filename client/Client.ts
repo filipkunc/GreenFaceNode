@@ -4,6 +4,18 @@
 
 const FPS: number = 60.0;
 
+class PlayerInput
+{
+    id: number;
+    input: Point;
+
+    constructor(id: number, input: Point)
+    {
+        this.id = id;
+        this.input = input;
+    }
+}
+
 class Client
 {
     canvas: HTMLCanvasElement;
@@ -13,7 +25,9 @@ class Client
     opened: boolean = false;
     inputAcceleration: Point = new Point(0.0, 0.0);
     playerIndex: number = 0;
-    lastTimeDiffs: number[] = [];
+    lastInputs: PlayerInput[] = [];
+    lastMessage: any = null;
+    inputId: number = 0;
 
     constructor()
     {
@@ -35,8 +49,37 @@ class Client
         setInterval(() => this.draw(), 1000 / FPS);
     }
 
+    processMessage(message: any): void
+    {
+        this.playerIndex = message.i[0];
+        this.game.deserialize(message);
+        var player = this.game.players[this.playerIndex];
+
+        var lastInputIdProcessedOnServer = <number>message.i[1];
+
+        for (var i = 0; i < this.lastInputs.length; i++)
+        {
+            if (this.lastInputs[i].id >= lastInputIdProcessedOnServer)
+            {
+                player.inputAcceleration.x = this.lastInputs[i].input.x;
+                player.inputAcceleration.y = this.lastInputs[i].input.y;
+                this.game.update();
+            }
+            else
+            {
+                this.lastInputs.splice(0, 1);
+                i--;
+            }
+        }
+    }
+
     draw(): void
     {
+        var serverMessage = this.lastMessage;
+        this.lastMessage = null;
+        if (serverMessage != null)
+            this.processMessage(serverMessage);
+
         if (this.playerIndex >= this.game.players.length)
             return;
 
@@ -50,14 +93,23 @@ class Client
             inputChanged = true;
         }
 
-        this.game.update();
+        this.inputId++;
+
+        this.lastInputs.push(new PlayerInput(
+            this.inputId,
+            new Point(player.inputAcceleration.x, player.inputAcceleration.y)));
+
+        if (serverMessage == null)
+            this.game.update();
 
         if (this.opened && inputChanged)
         {
             var message = {
-                t: "i",
-                i: [this.inputAcceleration.x, this.inputAcceleration.y]
+                i: [player.inputAcceleration.x,
+                    player.inputAcceleration.y,
+                    this.inputId]
             };
+
             this.ws.send(JSON.stringify(message));
         }
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -75,13 +127,7 @@ class Client
         this.context.fillStyle = "white";
         this.context.font = "10px Source Code Pro";
 
-        for (var i = 0; i < this.lastTimeDiffs.length; i++)
-                this.context.fillText(this.lastTimeDiffs[i].toString() + " ms", 5.0, 20.0 + i * 10.0);
-
-        if (this.lastTimeDiffs.length > 20)
-        {
-            this.lastTimeDiffs.splice(0, this.lastTimeDiffs.length - 20);
-        }
+        this.context.fillText(this.lastInputs.length.toString(), 5.0, 20.0);
 
         this.context.fillStyle = "black";
     }
@@ -100,31 +146,7 @@ class Client
             this.opened = false;
         };
         this.ws.onmessage = e => {
-            var message = JSON.parse(e.data);
-            if (message.t == "f")
-            {
-                this.playerIndex = message.i;
-                this.game.deserialize(message);
-                var diff = message.d - new Date().getTime();
-                this.lastTimeDiffs.push(diff);
-            }
-            else if (message.t == "l")
-            {
-                var lightPlayers = message.p;
-                if (this.game.players.length == lightPlayers.length)
-                {
-                    for (var i = 0; i < lightPlayers.length; i++)
-                    {
-                        if (i == this.playerIndex)
-                            continue;
-
-                        this.game.players[i].inputAcceleration.x = lightPlayers[i][0];
-                        this.game.players[i].inputAcceleration.y = lightPlayers[i][1];
-                        this.game.players[i].x = lightPlayers[i][2];
-                        this.game.players[i].y = lightPlayers[i][3];
-                    }
-                }
-            }
+            this.lastMessage = JSON.parse(e.data);
         };
     }
 

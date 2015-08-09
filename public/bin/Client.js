@@ -2,12 +2,21 @@
 ///<reference path="Game.ts"/>
 ///<reference path="LevelLoader.ts"/>
 var FPS = 60.0;
+var PlayerInput = (function () {
+    function PlayerInput(id, input) {
+        this.id = id;
+        this.input = input;
+    }
+    return PlayerInput;
+})();
 var Client = (function () {
     function Client() {
         this.opened = false;
         this.inputAcceleration = new Point(0.0, 0.0);
         this.playerIndex = 0;
-        this.lastTimeDiffs = [];
+        this.lastInputs = [];
+        this.lastMessage = null;
+        this.inputId = 0;
         this.canvas = document.getElementById('canvas');
         this.context = this.canvas.getContext('2d');
         this.game = new Game(this.canvas.width, this.canvas.height);
@@ -21,7 +30,28 @@ var Client = (function () {
         var _this = this;
         setInterval(function () { return _this.draw(); }, 1000 / FPS);
     };
+    Client.prototype.processMessage = function (message) {
+        this.playerIndex = message.i[0];
+        this.game.deserialize(message);
+        var player = this.game.players[this.playerIndex];
+        var lastInputIdProcessedOnServer = message.i[1];
+        for (var i = 0; i < this.lastInputs.length; i++) {
+            if (this.lastInputs[i].id >= lastInputIdProcessedOnServer) {
+                player.inputAcceleration.x = this.lastInputs[i].input.x;
+                player.inputAcceleration.y = this.lastInputs[i].input.y;
+                this.game.update();
+            }
+            else {
+                this.lastInputs.splice(0, 1);
+                i--;
+            }
+        }
+    };
     Client.prototype.draw = function () {
+        var serverMessage = this.lastMessage;
+        this.lastMessage = null;
+        if (serverMessage != null)
+            this.processMessage(serverMessage);
         if (this.playerIndex >= this.game.players.length)
             return;
         var inputChanged = false;
@@ -32,11 +62,15 @@ var Client = (function () {
             player.inputAcceleration.y = this.inputAcceleration.y;
             inputChanged = true;
         }
-        this.game.update();
+        this.inputId++;
+        this.lastInputs.push(new PlayerInput(this.inputId, new Point(player.inputAcceleration.x, player.inputAcceleration.y)));
+        if (serverMessage == null)
+            this.game.update();
         if (this.opened && inputChanged) {
             var message = {
-                t: "i",
-                i: [this.inputAcceleration.x, this.inputAcceleration.y]
+                i: [player.inputAcceleration.x,
+                    player.inputAcceleration.y,
+                    this.inputId]
             };
             this.ws.send(JSON.stringify(message));
         }
@@ -52,11 +86,7 @@ var Client = (function () {
         this.context.restore();
         this.context.fillStyle = "white";
         this.context.font = "10px Source Code Pro";
-        for (var i = 0; i < this.lastTimeDiffs.length; i++)
-            this.context.fillText(this.lastTimeDiffs[i].toString() + " ms", 5.0, 20.0 + i * 10.0);
-        if (this.lastTimeDiffs.length > 20) {
-            this.lastTimeDiffs.splice(0, this.lastTimeDiffs.length - 20);
-        }
+        this.context.fillText(this.lastInputs.length.toString(), 5.0, 20.0);
         this.context.fillStyle = "black";
     };
     Client.prototype.connect = function () {
@@ -73,26 +103,7 @@ var Client = (function () {
             _this.opened = false;
         };
         this.ws.onmessage = function (e) {
-            var message = JSON.parse(e.data);
-            if (message.t == "f") {
-                _this.playerIndex = message.i;
-                _this.game.deserialize(message);
-                var diff = message.d - new Date().getTime();
-                _this.lastTimeDiffs.push(diff);
-            }
-            else if (message.t == "l") {
-                var lightPlayers = message.p;
-                if (_this.game.players.length == lightPlayers.length) {
-                    for (var i = 0; i < lightPlayers.length; i++) {
-                        if (i == _this.playerIndex)
-                            continue;
-                        _this.game.players[i].inputAcceleration.x = lightPlayers[i][0];
-                        _this.game.players[i].inputAcceleration.y = lightPlayers[i][1];
-                        _this.game.players[i].x = lightPlayers[i][2];
-                        _this.game.players[i].y = lightPlayers[i][3];
-                    }
-                }
-            }
+            _this.lastMessage = JSON.parse(e.data);
         };
     };
     Client.prototype.disconnect = function () {
